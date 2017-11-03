@@ -1,0 +1,130 @@
+#!/bin/bash
+clear
+op() {
+echo -e "\033[97m[\033[92m$1\033[97m]\033[91m $2 $3 $4 $5 $6 $7\033[97m"
+}
+b="\033[97m"
+v="\033[92m"
+Ver="\033[97m"
+if [[ -d /etc/proxy-socks ]]; then
+ if [[ -f /etc/proxy-socks/proxy.py ]]; then
+  true
+ else
+ echo -e "Instalando proxy-socks..."
+  wget -qO- /dev/null https://raw.githubusercontent.com/adailtonsuporte/startplaygamer/master/proxy.py > /etc/proxy-socks/proxy.py
+  sleep 1
+IP=$(wget -qO- http://glemyson.hol.es)
+read -p "Confirme seu IP: " -e -i $IP IP
+if [[ -z "$IP" ]];then
+echo -e "IP invalido"
+sleep 1
+read -p "Digite seu IP: " IP
+fi
+IPPRO=$(cat /etc/proxy-socks/proxy.py|grep "server =" | awk {'print $3'})
+sed -i "s/server = $IPPRO/server = '$IP'/" /etc/proxy-socks/proxy.py
+sleep 1
+ fi
+else
+echo -e "Instalando proxy-socks..."
+mkdir /etc/proxy-socks
+wget -qO- /dev/null https://raw.githubusercontent.com/adailtonsuporte/startplaygamer/master/proxy.py > /etc/proxy-socks/proxy.py
+IP=$(wget -qO- http://glemyson.hol.es)
+read -p "Confirme seu IP: " -e -i $IP IP
+if [[ -z "$IP" ]];then
+echo -e "IP invalido"
+sleep 1
+read -p "Digite seu IP: " IP
+fi
+sleep 1
+IPPRO=$(cat /etc/proxy-socks/proxy.py|grep "server =" | awk {'print $3'})
+sed -i "s/server = $IPPRO/server = '$IP'/" /etc/proxy-socks/proxy.py
+fi
+main () {
+echo -e "$b===================[$v"Menu"$b]===================="
+op 01 ALTERAR PORTA DO PROXY
+op 02 ALTERAR MENSAGEM DE ERRO
+op 03 ALTERAR MENSAGEM DE SUCESSO
+op 04 PARAR PROXY-SOCKS
+op 05 INICIAR PROXY-SOCKS
+op 06 SAIR
+echo "" 
+read -p "Escolha uma opcao: " option
+ while [ "$option" != 01 -o "$option" != 1 -o "$option" != 02 -o "$option" != 2 -o "$option" != 03 -o "$option" != 3 -o "$option" != 04 -o "$option" != 4 -o "$option" != 05 -o "$option" != 5 -o "$option" != 06 -o "$option" != 6 ]
+ do
+   if [[ $option = 01 ||$option = 1 ||$option = 02 ||$option = 2 ||$option = 03 ||$option = 3 ||$option = 04 ||$option = 4 ||$option = 05 ||$option = 5 ||$option = 06 ||$option = 6 ]]; then
+ if [[ "$option" = "01" || "$option" = "1" ]];then
+ echo -e "$b===================[$v"Porta"$b]===================="
+  read -p "Porta: " porta1
+  echo -e "Parando proxy-socks..."
+  pidproxy=$(ps x|grep "proxy.py"|awk -F "pts" {'print $1'})
+  kill -9 $pidproxy 2>/dev/null
+  sleep 0.5
+  echo -e "Adicionando porta..."
+  porta2=$(cat /etc/proxy-socks/proxy.py|grep "port = " | awk -F = '{print $2}')
+  sed -i "s/port =$porta2/port = $porta1/" /etc/proxy-socks/proxy.py
+  echo -e "Iniciando proxy-socks..."
+  python3 /etc/proxy-socks/proxy.py &> /dev/null &
+  echo -e "Pronto, proxy-socks rodando na porta $porta1"
+  read -p 'Enter continuar...'  enter
+  main
+fi
+if [[ "$option" = "02" || "$option" = "2" ]]; then
+echo -e "$b===================[$v"MENSAGEM$Ver ERRO"$b]===================="
+   read -p "Mensagem: " msg1
+   echo -e "Parando proxy-socks..."
+   pidproxy=$(ps x|grep "proxy.py"|awk -F "pts" {'print $1'})
+   kill -9 $pidproxy 2>/dev/null
+   echo -e "Alterando mensagem..."
+   msg2=$(cat /etc/proxy-socks/proxy.py | grep "msg2 =" | awk -F = '{print $2}')
+   sed -i  "s/msg2 =$msg2/msg2 = '$msg1'/" /etc/proxy-socks/proxy.py
+   echo -e "Iniciando proxy-socks..."
+  python3 /etc/proxy-socks/proxy.py &> /dev/null &
+  echo -e "Pronto, proxy-socks estÃ¡ com a mensagem de erro $msg1"
+  read -p 'Enter continuar...'  enter
+  main
+fi
+if [[ "$option" = "03" || "$option" = "3" ]]; then
+echo -e "$b===================[$v"MENSAGEM SUCESSO"$b]===================="
+   read -p "Mensagem: " msg1
+   echo -e "Parando proxy-socks..."
+   pidproxy=$(ps x|grep "proxy.py"|awk -F "pts" {'print $1'})
+   kill -9 $pidproxy 2>/dev/null
+   echo -e "Alterando mensagem..."
+   msg2=$(cat /etc/proxy-socks/proxy.py | grep "msg1 =" | awk -F = '{print $2}')
+   sed -i  "s/msg1 =$msg2/msg1 = '$msg1'/" /etc/proxy-socks/proxy.py
+   echo -e "Iniciando proxy-socks..."
+  python3 /etc/proxy-socks/proxy.py &> /dev/null &
+  echo -e "Pronto, proxy-socks estÃ¡ com a mensagem de sucesso $msg1"
+  read -p 'Enter continuar...'  enter
+  main
+fi
+if [[ "$option" = "04" || "$option" = "4" ]]; then
+echo -e "$b===================[$v"PARAR SOCKS"$b]===================="
+   echo -e "Parando proxy-socks..."
+   pidproxy=$(ps x|grep "proxy.py"|awk -F "pts" {'print $1'})
+   kill -9 $pidproxy 2>/dev/null
+   echo -e "Proxy-socks parado"
+   read -p 'Enter continuar...'  enter
+  main
+fi
+if [[ "$option" = "05" || "$option" = "5" ]]; then
+echo -e "$b===================[$v"INICIAR SOCKS"$b]===================="
+   echo -e "Iniciando proxy-socks..."
+   python3 /etc/proxy-socks/proxy.py &>/dev/null&
+   sleep 1
+   echo -e "Proxy-socks iniciado"
+   read -p "Enter continuar..." enter
+   main
+ fi
+if [[ "$option" = "06" || "$option" = "6" ]]; then
+echo -e "$b===================[$v"SAIR"$b]===================="
+   echo -e "Saindo..."
+   sleep 1
+   exit
+fi
+else
+read -p "Escolha uma opcao: " option
+fi
+done
+}
+main
